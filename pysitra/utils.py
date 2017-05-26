@@ -186,8 +186,8 @@ def shp_triangular_transformation(df_in, from_crs="d96"):
                         geom.type))
 
     total_seconds = (datetime.now() - start).total_seconds()
-    tock_na_minuto = float(st_tock) * 60 / total_seconds
-    print "Successully transfromed {} points in {:.2f} seconds with a speed of {:.2f} points/min).".format(st_tock, total_seconds,
+    tock_na_minuto = float(st_tock)/ total_seconds
+    print "Successully transfromed {} points in {:.2f} seconds with a speed of {:.2f} points/s).".format(st_tock, total_seconds,
                                                                                  tock_na_minuto)
 
     return df_in
