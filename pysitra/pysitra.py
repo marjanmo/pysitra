@@ -6,8 +6,8 @@ import os
 
 
 @click.command()
-@click.option("-to_crs", required=True, type=click.Choice(["d48", "d96"]))
-@click.option("-method", default="triangle",  type=click.Choice(["triangle", "24regions", "7regions","manual"]))
+@click.option("-to_crs", required=True, type=click.Choice(["d48", "d96"]), help="Coordinate system to transform your data into")
+@click.option("-method", default="triangle",  type=click.Choice(["triangle", "24regions", "7regions","manual"]), help="Transformation method to be used")
 @click.argument("shp_in", required=True)
 @click.argument("shp_out", required=False)
 def cli(to_crs,method,shp_in,shp_out):

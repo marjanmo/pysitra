@@ -10,9 +10,22 @@ Comes with a handy command-line utility tool that enables easy batch conversion 
 
 Only suitable for slovenian coordinate systems d48GK (espg 3912) and d96TM (epsg 3974). Supports shapefiles for IO only!
 
+
+Methods:
+- triangle (best accuracy)
+- 24regions
+- 7regions
+- 3regions
+- 1region (Slovenia)
+ custom
+
 Example usage:
 
+
+
 cmd:
+sitra --help
+
 sitra -to_crs=d48 -method=triangular old_shapefile.shp new_shapefile.shp
 sitra -to_crs=d96 -method=24regions old_shapefile.shp new_shapefile.shp
 
@@ -30,3 +43,7 @@ Rules:
 
 
 #TODO: Implementation for 24 regions, 7 regions, manual transformation parameters...
+
+
+SEE ALSO:
+http://geocoordinateconverter.tk/index.html
