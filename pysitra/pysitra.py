@@ -1,13 +1,13 @@
 import click
-from . import utils
+import utils
 import geopandas as gpd
 import os
 
 
 
 @click.command()
-@click.option("-to_crs", required=True, type=click.Choice(["d48", "d96"]), help="Coordinate system to transform your data into")
-@click.option("-method", default="triangle",  type=click.Choice(["triangle", "24regions", "7regions","manual"]), help="Transformation method to be used")
+@click.option("--to_crs", required=True, type=click.Choice(["d48", "d96"]), help="Coordinate system to transform your data into")
+@click.option("--method", default="triangle",  type=click.Choice(["triangle", "24regions", "7regions","manual"]), help="Transformation method to be used")
 @click.argument("shp_in", required=True)
 @click.argument("shp_out", required=False)
 def cli(to_crs,method,shp_in,shp_out):
@@ -40,31 +40,23 @@ def cli(to_crs,method,shp_in,shp_out):
 
 
     # Command line utility tool for two way transformation between old slovenian CRS (D48GK) and new slovenian CRS (D96TM).
-    click.echo("Transformating a file {} to crs:{} and saving it to {}...".format(shp_in,to_crs,shp_out))
+    click.echo("Transformating a file {} into {} and saving it to {}...".format(shp_in,to_crs,shp_out))
 
     df_in = gpd.read_file(shp_in)
 
-
-    if method == "triangle":
-        df_out = utils.shp_triangular_transformation(df_in=df_in, from_crs=from_crs)
-
-    elif method == "24regions":
-        df_out = None
-        #TODO:NAREDI
-        raise NotImplementedError("24regions not yet implemented!")
-
-    elif method == "7regions":
-        df_out = None
-        #TODO:NAREDI
-        raise NotImplementedError("24regions not yet implemented!")
-
-    else:
-        df_out = None
-        #TODO:NAREDI
-        raise NotImplementedError("24regions not yet implemented!")
-
-
-
-
+    df_out = utils.shp_transformation(df_in=df_in, from_crs=from_crs,method=method)
 
     utils.save_to_shapefile_with_prj(geo_df=df_out, file_out=shp_out, epsg=to_epsg)
+
+# for method in ["triangle","1region","3regions","7regions","24regions"]:
+#     cli(to_crs="d48",method=method,shp_in="/home/marjan/arso/gis/script/a1.shp",shp_out="/home/marjan/arso/gis/script/a1_{}.shp".format(method))
+
+
+#
+# point = [[500000,100000]]
+#
+# for method in ["triangle","1region","3regions","7regions","24regions"]:
+#     a = utils.SlovenianTransformations(from_crs="d48",method=method)
+#     print method, " : ", a.transform(point)
+
+

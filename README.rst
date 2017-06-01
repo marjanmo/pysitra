@@ -42,7 +42,8 @@ Rules:
 - click demo!
 
 
-#TODO: Implementation for 24 regions, 7 regions, manual transformation parameters...
+#TODO:
+Implementation for 3D points, manual transformation parameters...
 
 
 SEE ALSO:
