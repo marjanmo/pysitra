@@ -1,20 +1,13 @@
 import os
-from datetime import datetime
-import math
-#
-# from fiona.crs import to_string
-# from urllib import urlencode
-# from urllib2 import urlopen
-# import json
-
-
+import csv
+import warnings
+import pandas as pd
 import geopandas as gpd
-from shapely.geometry import Point, LineString, Polygon, MultiLineString
-from scipy import spatial
 import numpy as np
+from shapely.geometry import Point
+
 
 HOMEDIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-
 
 
 def cheesy_slovenian_epsg_checker(shp):
@@ -63,228 +56,6 @@ def save_to_shapefile_with_prj(geo_df, file_out, epsg, encoding="utf-8"):
     # save file
     geo_df.to_file(filename=file_out, crs_wkt=prj_dict[epsg], encoding=encoding)
 
-
-def trans_2R_6params(x,y,params=()):
-    #parameters in order a,b,c,d,e,f
-
-    [a, b, c, d, e, f] = params
-
-    # calculate new points
-    x_new = a * x + b * y + c
-    y_new = d * y + e * y + f
-
-    return x_new,y_new
-
-def trans_3R_7params(x,y,z,params=()):
-    # parameters in order cx,cy,cz,s,rx,ry,rz (https://en.wikipedia.org/wiki/Helmert_transformation)
-    [cx,cy,cz,s,rx,ry,rz] = params
-
-    sec_to_rad = 4.8481e-6
-    rx = rx*sec_to_rad
-    ry = ry*sec_to_rad
-    rz = rz*sec_to_rad
-
-
-    x_new = cx + (1+s*10e-6)*(x - rz*y + ry*z)
-    print x_new
-    y_new = cy + (1+s*10e-6)*(rz*x + y - rx*z)
-    z_new = cz + (1+s*10e-6)*(-ry*x + rx*y + z)
-
-    import numpy as np
-    mx = np.array([x,y,z])
-    mc = np.array([cx,cy,cz])
-    mr = np.array([[1,-rz,ry],[rz,1,-rx],[-ry,rx,1]])
-
-    a = mc + (1+s*0.000001)*np.dot(mr,mx)
-    print a
-    x_new, y_new, z_new = a
-    return x_new,y_new,z_new
-
-
-def trans_2R_4params(x,y,params):
-    C, D, A, B = params
-
-    if D -180 > 0: #Find angles almost 360 deg, because in file it should be negative angle instead of almost 360!
-        D = D - 360
-
-    D = D * 2 * math.pi / 360
-
-    x_new = A + C * x - D * y
-    y_new = B + D * x + C * y
-
-    return x_new, y_new
-
-
-class SlovenianTransformations:
-
-    methods = ["triangle", "1region", "3regions", "7regions", "24regions"]
-
-    def __init__(self,from_crs, method="triangle"):
-
-        if method not in self.methods:
-            raise IOError("Type can only be on of {}!".format(",".join(self.methods)))
-
-        if from_crs not in ["d96", "d48"]:
-            raise IOError("From_crs argument can only be d96 or d48!")
-
-        self.method = method
-        self.from_crs = from_crs
-
-        self.shpfile = os.path.join(HOMEDIR, "pysitra","static", "{}_parameters_from_{}.shp".format(self.method, self.from_crs))
-
-        #Prepare spatial data for faster execution of transform function! (Reading shapefiles and preparing special objects
-        if self.method != "1region":
-            # 1region doesnt have shapefile, parameters are hardcoded!
-            self.df_parameters = gpd.read_file(self.shpfile)
-
-        if self.method == "triangle":
-            self.reference_points = np.array([(p.x, p.y) for p in self.df_parameters["geometry"].values.tolist()])
-
-            # create a KDTre object from a reference points
-            self.KDTree_object = spatial.KDTree(self.reference_points)
-
-
-    def transform(self,points):
-
-        # INPUT ERROR CHECK:
-        if not isinstance(points, list):
-            points = [points]
-
-        if isinstance(points[0], Point):
-            points = [(p.x, p.y) for p in points]
-
-        new_points = []
-
-        # AFFINE TRIANGLE 2R 6PARAMETRIC
-        if self.method == "triangle":
-
-            for point in points:
-                index_of_closest = self.KDTree_object.query(point)[1]
-                params = self.df_parameters.reset_index().ix[
-                    index_of_closest, "a b c d e f".split(" ")].values.tolist()
-                # https://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
-
-                x_new, y_new = trans_2R_6params(point[0], point[1], params)
-
-                new_points.append(Point(x_new, y_new))
-
-        # HELMERT 3R 7 PARAMETRIC
-        elif self.method in ["1region", "3regions", "7regions"]:
-
-            # doloci parametre
-            if self.method == "1region":
-                if self.from_crs == "d48":
-                    # from d48 to d96
-                    params = [409.545, 72.164, 486.872, 17.919665, -3.085957, -5.469110, 11.020289]
-                else:
-                    # from d96 to d48
-                    params = [-409.520, -72.192, -486.872, -17.919456, 3.086250, 5.468945, -11.020370]
-            else:
-                closest_polygons = closest_element_to_given_points(points, self.df_parameters)
-
-            for i, point in enumerate(points):
-                if self.method == "1region":
-                    x_new, y_new, _ = trans_3R_7params(point[0], point[1], 0, params=params)
-                else:
-                    params = self.df_parameters.ix[closest_polygons[i], "cx cy cz s rx ry rz".split(" ")]  # daj ven "id field"
-                    #TODO:Impletement 3D points!
-                    x_new, y_new, _ = trans_3R_7params(point[0], point[1], 0, params=params)
-
-                new_points.append(Point(x_new, y_new))
-
-        #AFFINE 2R 4parametric
-        elif self.method == "24regions":
-            closest_polygons = closest_element_to_given_points(points, self.df_parameters)
-
-            for i, point in enumerate(points):
-                params = self.df_parameters.ix[closest_polygons[i], ["merilo","zasuk","easting","northing"]]
-                x_new, y_new = trans_2R_4params(point[0], point[1], params=params)
-
-                new_points.append(Point(x_new, y_new))
-
-
-        print params
-        if len(new_points) == 1:
-            return new_points[0]
-
-
-        return new_points
-
-
-# def pts_transformation(points,from_crs,method="triangle",df_parameters=None,KDTree_object=None):
-#
-#
-#     methods = ["triangle","1region","3regions","7regions","24regions"]
-#     shpfile = os.path.join(HOMEDIR, "static", "{}_parameters_from_{}.shp".format(method, from_crs))
-#
-#     #INPUT ERROR CHECK:
-#     if not isinstance(points, list):
-#         points = [points]
-#
-#     if isinstance(points[0], Point):
-#         points = [(p.x, p.y) for p in points]
-#
-#     if method not in methods:
-#         raise IOError("Type can only be on of {}!".format(",".join(methods)))
-#
-#     if df_parameters == None and method != "1region":
-#         #1region doesnt have shapefile, parameters are hardcoded!
-#         df_parameters = gpd.read_file(shpfile)
-#
-#
-#     new_points = []
-#
-#     # TRIAGNLE 2R 6PARAMETRIC
-#     if method == "triangle":
-#
-#
-#         # Dovoli izracunat sele kasenje - optimization purposes
-#         if not KDTree_object == None:
-#             reference_points = np.array([(p.x, p.y) for p in df_parameters["geometry"].values.tolist()])
-#
-#             # create a KDTre object from a reference points
-#             KDTree_object = spatial.KDTree(reference_points)
-#
-#         for point in points:
-#             index_of_closest = KDTree_object.query(point)[1]
-#             [a, b, c, d, e, f] = df_parameters.reset_index().ix[
-#                 index_of_closest, "a b c d e f".split(" ")].values.tolist()
-#             # https://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
-#
-#             x_new, y_new = trans_2R_6params(point[0], point[1], [a, b, c, d, e, f])
-#
-#             new_points.append(Point(x_new, y_new))
-#
-#     # HELMERT 3R 7 PARAMETRIC
-#     elif method in ["1region","3regions","7regions","24regions"]:
-#
-#         #doloci parametre
-#         if method == "1region":
-#             if from_crs == "d48":
-#                 # from d48 to d96
-#                 params = [409.545, 72.164, 486.872, 17.919665, -3.085957, -5.469110, 11.020289]
-#             else:
-#                 # from d96 to d48
-#                 params = [-409.520, -72.192, -486.872, -17.919456, 3.086250, 5.468945, -11.020370]
-#         else:
-#             closest_polygons = closest_element_to_given_points(points,df_parameters)
-#
-#         for i,point in enumerate(points):
-#             if method == "1region":
-#                 x_new, y_new, _ = trans_3R_7params(point[0], point[1], 0, params=params)
-#             else:
-#                 params = df_parameters.ix[closest_polygons[i],"cx cy cz s rx ry rz".split(" ")]  #daj ven "id field"
-#                 x_new, y_new, _ = trans_3R_7params(point[0], point[1], 0, params=params)
-#
-#             new_points.append(Point(x_new,y_new))
-#
-#
-#     if len(new_points) == 1:
-#         return new_points[0]
-#
-#     return new_points
-
-
 def closest_element_to_given_points(points, shapefile):
     # ce je shapefile argument kot string, potem gre za fajl, ki ga preberi
     if isinstance(shapefile, str):
@@ -323,203 +94,77 @@ def closest_element_to_given_points(points, shapefile):
 
     return results
 
+def recognize_csv_separator(csv_file):
 
+    # https://stackoverflow.com/questions/3952132/how-do-you-dynamically-identify-unknown-delimiters-in-a-data-file
 
-def shp_transformation(df_in,from_crs,method):
-    start = datetime.now()
+    with open(csv_file) as f:
+            line = f.readline()
 
-    """
-    Function for transformation from d96 to d48 and vice versa with the triangular transformation
-    :param df_in:
-    :param from_crs:
-    :return:
-    """
+    return csv.Sniffer().sniff(line).delimiter
 
-    #Create a Transformation object with all the neccessary data in it.
-    ts = SlovenianTransformations(method=method,from_crs=from_crs)
+def check_for_csv_header(csv_file):
 
-    st_tock = 0
+    with open(csv_file) as f:
+            line = f.readline()
 
-    if df_in.ix[0, "geometry"].type == "Point":
-        pts = df_in["geometry"].values.tolist()
-        st_tock += len(pts)
-
-        # poracunaj nove tocke
-        pts_out = ts.transform(points=pts)
-        df_in["geometry"] = pts_out
-
+    #return direct value for read_csv input argument header
+    if any(c.isalpha() for c in set(line)):
+        return 0
     else:
-        # change the geometry by applying transformation formula t0 each vertex:
-        for i in df_in.index:
-            geom = df_in.loc[i, "geometry"]
+        return None
 
-            if geom.type == "LineString":
-                pts = geom.coords[:]
-                st_tock += len(pts)
+def convert_to_numeric(df):
+    for i in df.columns:
+        df[i] = pd.to_numeric(df[i], errors="ignore")
 
-                # poracunaj nove tocke
-                pts_out = ts.transform(points=pts)
-                df_in.loc[i, "geometry"] = LineString(pts_out)
+    return df
 
-            elif geom.type == "MultiLineString":
-                lines = []
-                for line in geom.geoms[:]:
-                    pts = line.coords[:]
-                    st_tock += len(pts)
+def recognize_xyz_fields(df):
 
-                    # poracunaj nove tocke
-                    pts_out = ts.transform(points=pts)
-                    lines.append(LineString(pts_out))
+    xyz_candidates = ["e","x","easting","east","vzhod","n","y","northing","north","sever","h","z"]
+    x_range = [350000,650000]
+    y_range = [10000,300000]
+    z_range = [0,10000]
 
-                df_in.loc[i, "geometry"] = MultiLineString(lines)
+    x,y,z =  None,None,None
 
-            elif geom.type == "Polygon":
+    df = convert_to_numeric(df)
+    df = df._get_numeric_data() #https://stackoverflow.com/questions/19900202/how-to-determine-whether-a-column-variable-is-numeric-or-not-in-pandas-numpy
 
-                pts = geom.exterior.coords[:]
-                st_tock += len(pts)
+    # Check if there are no reasonable column names
+    if len(set([str(i).lower() for i in df.columns]).intersection(set(xyz_candidates))) == 0:
+        warnings.warn("The dataset specified doesn't seem to have any meaningful column names specifed (e.g: x,y,e,n,easting,...)\n"
+                      "Program will try to autodetect x,y and z columns by accepting the first column with appropriate "
+                      "value range, starting from the last column...")
 
-                # poracunaj nove tocke
-                pts_out = ts.transform(points=pts)
-                df_in.loc[i, "geometry"] = Polygon(pts_out)
-            else:
-                raise NotImplementedError(
-                    "Found a geometry method {}! Function is implemented only for Point, LineString, "
-                    "MultiLineStrings and Polygons.".format(
-                        geom.type))
+        for col in reversed(df.columns):
+                mean = df[col].mean()
+                if x_range[0] < mean < x_range[-1]:
+                    x = col
+                elif y_range[0] < mean < y_range[-1]:
+                    y = col
+                elif z_range[0] < mean < z_range[-1]:
+                    z = col
+    else:
+        for col in reversed(df.columns):
+            if col.lower() in xyz_candidates:
+                mean = df[col].mean()
+                if x_range[0] < mean < x_range[-1]:
+                    x = col
+                if y_range[0] < mean < y_range[-1]:
+                    y = col
+                if z_range[0] < mean < y_range[-1]:
+                    z = col
 
-    total_seconds = (datetime.now() - start).total_seconds()
-    tock_na_minuto = float(st_tock) / total_seconds
-    print "Successully transfromed {} points in {:.2f} seconds with a speed of {:.2f} points/s).".format(st_tock,
-                                                                                                         total_seconds,
-                                                                                                         tock_na_minuto)
+    if x == None:
+        raise IOError("Couldn't figure out which field represents easting coordinate (tried matching names and guesing by size range.)")
 
-    return df_in
-#
-# def shp_triangular_transformation(df_in, from_crs="d96"):
-#     start = datetime.now()
-#
-#     """
-#     Function for transformation from d96 to d48 and vice versa with the triangular transformation
-#     :param df_in:
-#     :param from_crs:
-#     :return:
-#     """
-#     from_crs = from_crs.lower()
-#
-#     if from_crs not in ["d96", "d48"]:
-#         raise IOError("From_crs argument can only be d96 or d48!")
-#
-#     # read the correct (d96 or d48) file with transformation parameters for given direction
-#     param_shp = os.path.join(HOMEDIR, "pysitra","static", "triangle_parameters_from_{}_points.shp".format(from_crs))
-#     df_parameters = gpd.read_file(param_shp)
-#
-#     reference_points = np.array([(p.x, p.y) for p in df_parameters["geometry"].values.tolist()])
-#
-#     # create a KDTre object from a reference points
-#     KDTree_object = spatial.KDTree(reference_points)
-#
-#     st_tock = 0
-#
-#     if df_in.ix[0, "geometry"].method == "Point":
-#         pts = df_in["geometry"].values.tolist()
-#         st_tock += len(pts)
-#
-#         # poracunaj nove tocke
-#         pts_out = pts_triangle_transformation(points=pts, KDTree_object=KDTree_object,
-#                                                      df_parameters=df_parameters)
-#         df_in["geometry"] = pts_out
-#
-#     else:
-#         # change the geometry by applying transformation formula t0 each vertex:
-#         for i in df_in.index:
-#             geom = df_in.loc[i, "geometry"]
-#
-#             if geom.method == "LineString":
-#                 pts = geom.coords[:]
-#                 st_tock += len(pts)
-#
-#                 # poracunaj nove tocke
-#                 pts_out = pts_triangle_transformation(points=pts, KDTree_object=KDTree_object,
-#                                                              df_parameters=df_parameters)
-#                 df_in.loc[i, "geometry"] = LineString(pts_out)
-#
-#             elif geom.method == "MultiLineString":
-#                 lines = []
-#                 for line in geom.geoms[:]:
-#                     pts = line.coords[:]
-#                     st_tock += len(pts)
-#
-#                     # poracunaj nove tocke
-#                     pts_out = pts_triangle_transformation(points=pts, KDTree_object=KDTree_object,
-#                                                                  df_parameters=df_parameters)
-#                     lines.append(LineString(pts_out))
-#
-#                 df_in.loc[i, "geometry"] = MultiLineString(lines)
-#
-#             elif geom.method == "Polygon":
-#
-#                 pts = geom.exterior.coords[:]
-#                 st_tock += len(pts)
-#
-#                 # poracunaj nove tocke
-#                 pts_out = pts_triangle_transformation(points=pts, KDTree_object=KDTree_object,
-#                                                              df_parameters=df_parameters)
-#                 df_in.loc[i, "geometry"] = Polygon(pts_out)
-#             else:
-#                 raise NotImplementedError(
-#                     "Found a geometry method {}! Function is implemented only for Point, LineString, "
-#                     "MultiLineStrings and Polygons.".format(
-#                         geom.method))
-#
-#     total_seconds = (datetime.now() - start).total_seconds()
-#     tock_na_minuto = float(st_tock)/ total_seconds
-#     print "Successully transfromed {} points in {:.2f} seconds with a speed of {:.2f} points/s).".format(st_tock, total_seconds,
-#                                                                                  tock_na_minuto)
-#
-#     return df_in
-#
-#
-#
+    if y == None:
+        raise IOError("Couldn't figure out which field represents northing coordinate (tried matching names and guesing by size range.)")
 
+    if z == None:
+        warnings.warn("The specified dataset doesn't seem to have a height attribute specified (h or z field)!")
 
-# def pts_triangle_transformation(points, df_parameters, KDTree_object=None):
-#     """
-#     Function,
-#
-#     https://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
-#     :param points:
-#     :param df_reference_points:
-#     :return:
-#     """
-#
-#     # Dovoli izracunat sele kasenje - optimization purposes
-#     if not KDTree_object:
-#         reference_points = np.array([(p.x, p.y) for p in df_parameters["geometry"].values.tolist()])
-#
-#         # create a KDTre object from a reference points
-#         KDTree_object = spatial.KDTree(reference_points)
-#
-#     TRANS_PARAMETERS = "a b c d e f"
-#
-#     new_points = []
-#
-#     if not isinstance(points, list):
-#         points = [points]
-#
-#     if isinstance(points[0], Point):
-#         points = [(p.x, p.y) for p in points]
-#
-#     for point in points:
-#         index_of_closest = KDTree_object.query(point)[1]
-#         [a, b, c, d, e, f] = df_parameters.reset_index().ix[
-#             index_of_closest, TRANS_PARAMETERS.split(" ")].values.tolist()
-#         # https://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
-#
-#         x_new,y_new = trans_2R_6params(point[0],point[1],[a, b, c, d, e, f])
-#
-#         new_points.append(Point(x_new, y_new))
-#
-#     if len(new_points) == 1:
-#         return new_points[0]
-#
-#     return new_points
+    return x,y,z
+

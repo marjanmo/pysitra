@@ -15,5 +15,5 @@ setup(name='pysitra',
       packages=['pysitra'],
       install_requires=['geopandas',"numpy","scipy","shapely","click"],
       include_package_data=True,
-      entry_points = {'console_scripts': ['sitra=pysitra.pysitra:cli']},
+      entry_points = {'console_scripts': ['sitra=pysitra.cli:cli']},
       zip_safe=False)
