@@ -19,10 +19,12 @@ comes with a handy command-line utility tool that enables an easy batch
 conversion of shapefiles and coma-separated ascii files.
 
 Program supports two most commonly used transformating methods for 2D
-point transformations: - ***triangle:*** affine 6-parametric 2D triangle
+point transformations:
+- **triangle:** affine 6-parametric 2D triangle
 transformation, based on 899 `Slovenian reference
 points <http://www.e-prostor.gov.si/zbirke-prostorskih-podatkov/drzavni-koordinatni-sistem/horizontalni-drzavni-koordinatni-sistem-d96tm/d96tm/transformacijski-parametri/>`__
-(best accuracy) - ***24regions:*** a simplified 4-parametric 2D
+(best accuracy)
+- **24regions:** a simplified 4-parametric 2D
 transformation (where parameteres are precalculated for 24 Slovenian
 regions (`more
 info <http://www.e-prostor.gov.si/zbirke-prostorskih-podatkov/drzavni-koordinatni-sistem/horizontalni-drzavni-koordinatni-sistem-d96tm/d96tm/transformacijski-parametri/>`__)
