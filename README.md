@@ -1,18 +1,20 @@
 
-#WORK IN PROGRESS!  NOT YET AVAILABLE!
+# WORK IN PROGRESS!  NOT YET AVAILABLE ON PYPI!
 
-#PySitra
+# PySitra
 
-Python package for a two-way 2D transformation between old and new slovenian coordinates system
+A Python package for a two-way 2D transformation between old and new slovenian coordinates system.
 
 ## About
 
-PySitra is a python written library two-way 2D transformation between old and new slovenian coordinates system. The project and it's name is inspired by the popular Slovenian web portal for online point transformation 
-between old and new coordinate systems, called [SitraNet.si](www.sitranet.si) and it's C-written command-line-friendly 
-successor [Geo Coordinate Converter](http://geocoordinateconverter.tk/indeks.html).
-It comes with a handy command-line utility tool that enables an easy batch conversion of shapefiles.
+PySitra is a python written library two-way 2D transformation between old and new slovenian coordinates system. 
+The project and it's name (***Py**thon **S**loven**i**an **tra**nsformation*) is inspired by the popular Slovenian web 
+portal for online point transformation between old (Gauss-Krüger) and new (Transverse Mercator) coordinate systems, 
+called [SitraNet.si](www.sitranet.si), and it's C-written command-line-friendly successor 
+[Geo Coordinate Converter](http://geocoordinateconverter.tk/indeks.html).
+Library comes with a handy command-line utility tool that enables an easy batch conversion of shapefiles and 
+coma-separated ascii files.
 
-Only suitable for slovenian coordinate systems d48GK (espg 3912) and d96TM (epsg 3974). Supports shapefiles for IO only!
 
 Program supports two most commonly used transformating methods for 2D point transformations:
 - ***triangle:*** affine 6-parametric 2D triangle transformation, based on 899 [Slovenian reference points](http://www.e-prostor.gov.si/zbirke-prostorskih-podatkov/drzavni-koordinatni-sistem/horizontalni-drzavni-koordinatni-sistem-d96tm/d96tm/transformacijski-parametri/) (best accuracy)
@@ -22,7 +24,10 @@ Program supports two most commonly used transformating methods for 2D point tran
 Program contains spatailly precalculated regional transformation parameters, but also
 allows a manual specification of transformation parameters for both available methods.
 
-For more theoretical background see the official GURS [webpage](http://www.e-prostor.gov.si/zbirke-prostorskih-podatkov/drzavni-koordinatni-sistem/transformacija-v-novi-koordinatni-sistem/).
+**IMPORTANT NOTICE:** Library is primarily intended and therefore mostly suitable for 
+slovenian coordinate systems d48GK (espg: 3912) and d96TM (epsg: 3974)!
+
+For more theoretical background, see the official GURS [webpage](http://www.e-prostor.gov.si/zbirke-prostorskih-podatkov/drzavni-koordinatni-sistem/transformacija-v-novi-koordinatni-sistem/).
 
 ## Installation:
 
@@ -33,9 +38,9 @@ pip install pysitra
 ```
 
 
-##Usage:
+## Usage:
 
-###1. Python API
+### 1. Python API
 
 **1.1. Transforming python lists of points:**
 
@@ -62,12 +67,12 @@ ts_triangle_manual = SloTransformation(from_crs="d48",method="triangle",params="
 
 # Once you have transformation object initialized, you can use it's .transform() method to transform old points into
 # new points quite cheaply:
-print "\nTriangle transformation (affine 6parametric):"
-print ts_triangle.transform(D48_POINTS)
-print "\n24regions transformation (4parametric):"
-print  ts_24region.transform(D48_POINTS)
-print "\nTriangle transformation with custom parameters:"
-print ts_triangle_manual.transform(D48_POINTS)
+print("Triangle transformation (affine 6parametric):")
+print(ts_triangle.transform(D48_POINTS))
+print("24regions transformation (4parametric):")
+print( ts_24region.transform(D48_POINTS))
+print("Triangle transformation with custom parameters:")
+print(ts_triangle_manual.transform(D48_POINTS))
 ```
 
 **1.2. Transforming files with python**
@@ -109,10 +114,10 @@ D48_POINTS = [(500000,100000),(0,0),(650000,200000)]
 for point in D48_POINTS:
     # 4parametric transformation with params: scale,rotation,trans_x,trans_y
     x, y = trans_2R_4params(point[0], point[1], params=[0.9999873226,0.0009846750,378.755,-493.382])
-    print x, y
+    print(x, y)
     # 6parametric transformation with params a,b,c,d,e,f
     x, y = trans_2R_6params(point[0], point[1], params=[1.00001,0.000040647,-374.668,-0.00002241,1.000006,494.8428])
-    print x, y
+    print(x, y)
 ```
 
 ###2. Command Line Utility
@@ -200,14 +205,14 @@ sitra --to_crs=d96 --method=24regions --params="0.9999873226;0.0009846750;378.75
 
 
 
-###To-do:
+### TODO:
 * Implementation for 3D points (7-parametric transformation)
 
 
 ## Authors
 
-* **Marjan Moderc** - *coding part* - [GitHub](https://github.com/marjanmo)
-* **Regina Kolenc** - *mathematical background*
+* **Marjan Moderc, ARSO, Slovenia** - *coding part* - [GitHub](https://github.com/marjanmo)
+* **Regina Kolenc, ARSO, Slovenia** - *mathematical background*
 
 See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
