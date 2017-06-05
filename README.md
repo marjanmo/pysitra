@@ -8,7 +8,7 @@ A Python package for a two-way 2D transformation between old and new slovenian c
 ## About
 
 PySitra is a python written library two-way 2D transformation between old and new slovenian coordinates system. 
-The project and it's name (***Py**thon **S**loven**i**an **tra**nsformation*) is inspired by the popular Slovenian web 
+The project and it's name (**Py**thon **S**loven**i**an **tra**nsformation) is inspired by the popular Slovenian web 
 portal for online point transformation between old (Gauss-Krüger) and new (Transverse Mercator) coordinate systems, 
 called [SitraNet.si](www.sitranet.si), and it's C-written command-line-friendly successor 
 [Geo Coordinate Converter](http://geocoordinateconverter.tk/indeks.html).
@@ -18,14 +18,14 @@ coma-separated ascii files.
 
 Program supports two most commonly used transformating methods for 2D point transformations:
 - ***triangle:*** affine 6-parametric 2D triangle transformation, based on 899 [Slovenian reference points](http://www.e-prostor.gov.si/zbirke-prostorskih-podatkov/drzavni-koordinatni-sistem/horizontalni-drzavni-koordinatni-sistem-d96tm/d96tm/transformacijski-parametri/) (best accuracy)
-- ***24regions:*** simplified 4-parametric 2D transformation (where parameteres are precalculated for 24 Slovenian regions
+- ***24regions:*** a simplified 4-parametric 2D transformation (where parameteres are precalculated for 24 Slovenian regions
 ([more info](http://www.e-prostor.gov.si/zbirke-prostorskih-podatkov/drzavni-koordinatni-sistem/horizontalni-drzavni-koordinatni-sistem-d96tm/d96tm/transformacijski-parametri/))
 
 Program contains spatailly precalculated regional transformation parameters, but also
 allows a manual specification of transformation parameters for both available methods.
 
 **IMPORTANT NOTICE:** Library is primarily intended and therefore mostly suitable for 
-slovenian coordinate systems d48GK (espg: 3912) and d96TM (epsg: 3974)!
+slovenian coordinate systems d48GK (espg: 3912) and d96TM (epsg: 3794)!
 
 For more theoretical background, see the official GURS [webpage](http://www.e-prostor.gov.si/zbirke-prostorskih-podatkov/drzavni-koordinatni-sistem/transformacija-v-novi-koordinatni-sistem/).
 
@@ -120,7 +120,7 @@ for point in D48_POINTS:
     print(x, y)
 ```
 
-###2. Command Line Utility
+### 2. Command Line Utility
 
 Transformations on a file (directory) level are best carried out by using the command line utility, that automatically 
 ships and installs with the library. Utility can be invoked with the command `sitra` in your shell. 
@@ -169,26 +169,26 @@ can be performed with ascii input types
     ```
     * note the apostrophe `"` or `'` around the semicolon-separated values in both cases! See the actual examples below!
     
-**2.2. EXAMPLES**:
+**2.2. CMD EXAMPLES**:
 1. A minimal example usage for transforming shapefile with default settings (--method=triangle) will save result into 'old_shapefile_d96.shp'
 ```
 sitra --to_crs=d96 old_shapefile.shp
 ```
 
-2. Another example, this time with --method=24regions and specified output.
+2. Another example, this time with --method=24regions and specified output:
 
 ```
 sitra --to_crs=d96 --method=24regions old_shapefile.shp new_shapefile.shp
 ```
 
-3. Example with csv file (note that no csv format specification is needed --> separator and columns are automatically guessed!)x,y field specification )
+3. Example with csv file (note that no csv format specification is needed --> separator and x,y,z columns are automatically guessed!):
 
 ```
 sitra --to_crs=d48 --method=24regions Cool_points.csv Back_to_MariaTheresa_times.csv
 ```
 
 
-4. In all above examples the transformation parameters were automatically calculated based on a chosen method and point location.
+4. In all the above examples the transformation parameters were automatically calculated based on a chosen method and point location.
 But you can also specify your own parameters, but you have to make sure you pass correct number of parameters in right 
 order for the corresponding transformation method. Here is an example for custom affine 6-parametric 2R transformation 
 (~triangle) d48-->d96 tranformation. (*Parameters are given in order a,b,c,d,e,f, based on this [standard naming convention](http://geocoordinateconverter.tk/)*):
@@ -206,16 +206,14 @@ sitra --to_crs=d96 --method=24regions --params="0.9999873226;0.0009846750;378.75
 
 
 ### TODO:
-* Implementation for 3D points (7-parametric transformation)
+* Implementation for 3D points (7-parametric transformation) --> 1region,3regions,7regions transformation
 
 
 ## Authors
 
 * **Marjan Moderc, ARSO, Slovenia** - *coding part* - [GitHub](https://github.com/marjanmo)
-* **Regina Kolenc, ARSO, Slovenia** - *mathematical background*
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+* **Regina Kolenc, ARSO, Slovenia** - *mathematical-geodetic background*
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/marjanmo/pysitra/blob/master/README.md) file for details
