@@ -1,3 +1,4 @@
+from __future__ import print_function
 import utils
 import os
 import math
@@ -199,9 +200,9 @@ def csv_transformation(df_in,from_crs,method,params=None):
     num_pts = len(pts)
     total_seconds = (datetime.now() - start).total_seconds()
     tock_na_minuto = float(num_pts) / total_seconds
-    print "Successully transfromed {} points in {:.2f} seconds with a speed of {:.2f} points/s.".format(num_pts,
+    print("Successully transfromed {} points in {:.2f} seconds with a speed of {:.2f} points/s.".format(num_pts,
                                                                                                          total_seconds,
-                                                                                                         tock_na_minuto)
+                                                                                                         tock_na_minuto))
     return df_in
 
 def shp_transformation(df_in,from_crs,method,params=None):
@@ -268,8 +269,8 @@ def shp_transformation(df_in,from_crs,method,params=None):
 
     total_seconds = (datetime.now() - start).total_seconds()
     tock_na_minuto = float(num_pts) / total_seconds
-    print "Successully transfromed {} points in {:.2f} seconds with a speed of {:.2f} points/s.".format(num_pts,
+    print("Successully transfromed {} points in {:.2f} seconds with a speed of {:.2f} points/s.".format(num_pts,
                                                                                                          total_seconds,
-                                                                                                         tock_na_minuto)
+                                                                                                         tock_na_minuto))
 
     return df_in

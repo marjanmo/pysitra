@@ -1,3 +1,4 @@
+from __future__ import print_function    # (at top of module)
 import click
 import utils,trans
 import geopandas as gpd
@@ -53,13 +54,13 @@ def cli(to_crs,method,params,file_in,file_out):
 
         df_in = gpd.read_file(file_in)
 
-        print "\nInput data sample:"
-        print df_in
+        print("\nInput data sample:")
+        print(df_in)
 
         df_out = trans.shp_transformation(df_in=df_in, from_crs=from_crs,method=method,params=params)
 
-        print "\nOutput data sample:"
-        print df_out
+        print("\nOutput data sample:")
+        print(df_out)
 
         utils.save_to_shapefile_with_prj(geo_df=df_out, file_out=file_out, epsg=to_epsg)
 
@@ -73,13 +74,13 @@ def cli(to_crs,method,params,file_in,file_out):
         header = utils.check_for_csv_header(file_in)
         df_in = pd.read_csv(file_in,sep=sep,header=header)
 
-        print "\nInput data sample:"
-        print df_in
+        print("\nInput data sample:")
+        print(df_in)
 
         df_out = trans.csv_transformation(df_in=df_in, from_crs=from_crs,method=method,params=params)
 
-        print "\nOutput data sample:"
-        print df_out
+        print("\nOutput data sample:")
+        print(df_out)
 
         df_out.to_csv(file_out,sep=sep,header=header,index=None)
 
