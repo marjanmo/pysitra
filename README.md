@@ -1,6 +1,3 @@
-
-# WORK IN PROGRESS!  NOT YET AVAILABLE ON PYPI!
-
 # PySitra
 
 A Python package for a two-way 2D transformation between old and new slovenian coordinates system.
@@ -109,7 +106,7 @@ csv_out.to_file("terrain_measurements_in_d96.csv")
 ```python
 from pysitra import trans_2R_4params,trans_2R_6params
 
-D48_POINTS = [(500000,100000),(0,0),(650000,200000)]
+D48_POINTS = [(500000,100000), (0,0), (650000,200000)]
 
 for point in D48_POINTS:
     # 4parametric transformation with params: scale,rotation,trans_x,trans_y
@@ -211,9 +208,9 @@ sitra --to_crs=d96 --method=24regions --params="0.9999873226;0.0009846750;378.75
 
 ## Authors
 
-* **Marjan Moderc, ARSO, Slovenia** - *coding part* - [GitHub](https://github.com/marjanmo)
-* **Regina Kolenc, ARSO, Slovenia** - *mathematical-geodetic background*
+* **Marjan Moderc**, ARSO, Slovenia - *the coding wizardy* - [GitHub](https://github.com/marjanmo)
+* **Regina Kolenc**, ARSO, Slovenia - *mathematical-geodetic background*
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/marjanmo/pysitra/blob/master/README.md) file for details
+This project is licensed under the MIT License - see the [LICENSE.txt](https://github.com/marjanmo/pysitra/blob/master/LICENSE.txt) file for details
