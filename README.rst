@@ -1,4 +1,4 @@
-PySitra
+PySiTra
 =======
 
 A Python package for a two-way 2D transformation between old and new
@@ -23,7 +23,7 @@ point transformations:
 
 - **triangle:** affine 6-parametric 2D triangle transformation, based on 899 `Slovenian reference points <http://www.e-prostor.gov.si/zbirke-prostorskih-podatkov/drzavni-koordinatni-sistem/horizontalni-drzavni-koordinatni-sistem-d96tm/d96tm/transformacijski-parametri/>`__ (best accuracy)
 
-- **24regions:** a simplified 4-parametric 2D transformation (where parameteres are precalculated for 24 Slovenian regions (`more info <http://www.e-prostor.gov.si/zbirke-prostorskih-podatkov/drzavni-koordinatni-sistem/horizontalni-drzavni-koordinatni-sistem-d96tm/d96tm/transformacijski-parametri/>`__)
+- **24regions:** a simplified 4-parametric 2D transformation, where parameteres are precalculated for 24 Slovenian regions (`more info <http://www.e-prostor.gov.si/zbirke-prostorskih-podatkov/drzavni-koordinatni-sistem/horizontalni-drzavni-koordinatni-sistem-d96tm/d96tm/transformacijski-parametri/>`__)
 
 Program contains spatailly precalculated regional transformation
 parameters, but also allows a manual specification of transformation
@@ -39,12 +39,30 @@ For more theoretical background, see the official GURS
 Installation:
 -------------
 
-Library is available on PyPi repository, so it can easily be installed
-with pip:
+**Installing on Linux:**
+
+Library is available on PyPi repository, so it can easily be installed with pip:
 
 ::
 
     pip install pysitra
+
+Prerequisites for such a simplicity of course include having Python (2 or 3) and pip installed on your system.
+Library is dependent on some popular and powerful, but sometimes hard-to-install Python libraries (numpy,scipy,pandas,geopandas),
+that themselves need some (standard) geospatial non-Python dependencies (`GEOS <https://trac.osgeo.org/geos/>`__,
+`GDAL <http://www.gdal.org/>`__), all installable by ``sudo apt-get ...``. For more on installing those on Linux, see
+`this page <https://docs.djangoproject.com/en/1.11/ref/contrib/gis/install/geolibs/>`__.
+
+**Installing on Windows:**
+
+If you don't have a Python installed, the easiest way to setup the proper Python environment and its dependencies is by
+installing `Anaconda <https://www.continuum.io/downloads>`__. This is a Python distibution that ships with most of the
+popular libraries out of the box. Still, libraries that require GEOS and GDAL (e.g. Fiona, Shapely,...) are best
+additionally installed by downloading the .whl file that matches your python and system version from
+`this repo <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`__ and using ``pip install *.whl``.
+Then you can install pysitra with pip as in the above example.
+
+
 
 Usage:
 ------
@@ -178,7 +196,9 @@ available options:
 
    -  for affine triangle transformation (=2R-6parameters
       transformation):
-      ``... -method=triangular --params="scale_x;rotation_y;translation_x;rotation_x;scale_y;translation_y" ...``
+      ::
+
+      ... -method=triangular --params="scale_x;rotation_y;translation_x;rotation_x;scale_y;translation_y" ...
 
    -  for simplified 2R-4parameters transformation (which is used in
       24regions transformation)
@@ -190,25 +210,26 @@ available options:
    -  note the apostrophe ``"`` or ``'`` around the semicolon-separated
       values in both cases! See the actual examples below!
 
-**2.2. CMD EXAMPLES**: 1. A minimal example usage for transforming
-shapefile with default settings (--method=triangle) will save result
-into 'old\_shapefile\_d96.shp'
+**2.2. CMD EXAMPLES**:
 
-::
+1. A minimal example usage for transforming
+   shapefile with default settings (--method=triangle) will save result into 'old\_shapefile\_d96.shp'
+
+   ::
 
     sitra --to_crs=d96 old_shapefile.shp
 
 2. Another example, this time with --method=24regions and specified
    output:
 
-::
+   ::
 
     sitra --to_crs=d96 --method=24regions old_shapefile.shp new_shapefile.shp
 
 3. Example with csv file (note that no csv format specification is
    needed --> separator and x,y,z columns are automatically guessed!):
 
-::
+   ::
 
     sitra --to_crs=d48 --method=24regions Cool_points.csv Back_to_MariaTheresa_times.csv
 
@@ -222,7 +243,7 @@ into 'old\_shapefile\_d96.shp'
    this `standard naming
    convention <http://geocoordinateconverter.tk/>`__*):
 
-::
+   ::
 
     sitra --to_crs=d96 --method=triangle --params='1.00001;0.000040647;-374.668;-0.00002241;1.000006;494.8428' old_points.csv new_points.csv
 
@@ -238,7 +259,7 @@ into 'old\_shapefile\_d96.shp'
        sitra --to_crs=d96 --method=24regions --params="0.9999873226;0.0009846750;378.755;-493.382" old_points.csv new_points.csv
 
 TODO:
-~~~~~
+-----
 
 -  Implementation for 3D points (7-parametric transformation) -->
    1region,3regions,7regions transformation

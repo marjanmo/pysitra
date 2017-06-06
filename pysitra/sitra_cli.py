@@ -1,6 +1,6 @@
 from __future__ import print_function    # (at top of module)
 import click
-import utils,trans
+from . import utils,trans
 import geopandas as gpd
 import os
 import pandas as pd

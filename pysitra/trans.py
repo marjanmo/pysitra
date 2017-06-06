@@ -1,5 +1,5 @@
 from __future__ import print_function
-import utils
+from . import utils
 import os
 import math
 from shapely.geometry import Point, LineString, Polygon, MultiLineString
