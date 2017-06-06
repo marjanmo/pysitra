@@ -47,20 +47,25 @@ Library is available on PyPi repository, so it can easily be installed with pip:
 
     pip install pysitra
 
-Prerequisites for such a simplicity of course include having Python (2 or 3) and pip installed on your system.
-Library is dependent on some popular and powerful, but sometimes hard-to-install Python libraries (numpy,scipy,pandas,geopandas),
-that themselves need some (standard) geospatial non-Python dependencies (`GEOS <https://trac.osgeo.org/geos/>`__,
+Mind that prerequisites for such a simplicity of course include having Python (2 or 3) and pip installed on your system.
+Library depends on some powerful, but sometimes hard-to-install Python libraries (numpy,scipy,pandas,geopandas),
+that themselves need some (standard) geospatial system dependencies (`GEOS <https://trac.osgeo.org/geos/>`__,
 `GDAL <http://www.gdal.org/>`__), all installable by ``sudo apt-get ...``. For more on installing those on Linux, see
 `this page <https://docs.djangoproject.com/en/1.11/ref/contrib/gis/install/geolibs/>`__.
 
 **Installing on Windows:**
 
-If you don't have a Python installed, the easiest way to setup the proper Python environment and its dependencies is by
-installing `Anaconda <https://www.continuum.io/downloads>`__. This is a Python distibution that ships with most of the
-popular libraries out of the box. Still, libraries that require GEOS and GDAL (e.g. Fiona, Shapely,...) are best
-additionally installed by downloading the .whl file that matches your python and system version from
-`this repo <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`__ and using ``pip install *.whl``.
-Then you can install pysitra with pip as in the above example.
+Installing pysitra on Windows is straightforward, but it takes a bit more steps:
+
+-  First, if you don't even have a Python installed,
+   the easiest way to setup the proper Python environment and its dependencies is by installing `Anaconda <https://www.continuum.io/downloads>`__.
+   This is a Python distibution that ships with most of the popular libraries out of the box. Make sure to add
+   ``conda`` and ``python`` to ``path`` system environment variable.
+-  Despite Anaconda's awesomeness, libraries that require non-python GEOS and GDAL are best
+   separetely installed by downloading the .whl file that matches your python and system version from `this repo <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`__.
+   Download appropriate wheels for **GDAL, Fiona and Shapely** and install them with ``pip install *.whl``.
+-  Compliling non-pure Python dependencies on Windows also requires `Visual C++ Build Tools package <http://landinghub.visualstudio.com/visual-cpp-build-tools>`__
+-  Then you can install pysitra with pip as in the above, Linux example.
 
 
 
