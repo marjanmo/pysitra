@@ -7,18 +7,18 @@ slovenian coordinates system.
 About
 -----
 
-PySitra is a python written library two-way 2D transformation between
+PySitra is a python written library two-way (currently **2D** only!) transformation between
 old and new slovenian coordinates system. The project and it's name
-(**Py**\ thon **S**\ loven\ **i**\ an **tra**\ nsformation) is inspired
+(**Py**\ thon **S**\ loven\ **i**\ an **Tra**\ nsformation) is inspired
 by the popular Slovenian web portal for online point transformation
-between old (Gauss-Krüger) and new (Transverse Mercator) coordinate
+between old (D48GK) and new (D96TM) coordinate
 systems, called `SitraNet.si <www.sitranet.si>`__, and it's C-written
 command-line-friendly successor `Geo Coordinate
 Converter <http://geocoordinateconverter.tk/indeks.html>`__. Library
 comes with a handy command-line utility tool that enables an easy batch
 conversion of shapefiles and coma-separated ascii files.
 
-Program supports two most commonly used transformating methods for 2D
+Current version supports two most commonly used transformating methods for 2D
 point transformations:
 
 - **triangle:** affine 6-parametric 2D triangle transformation, based on 899 `Slovenian reference points <http://www.e-prostor.gov.si/zbirke-prostorskih-podatkov/drzavni-koordinatni-sistem/horizontalni-drzavni-koordinatni-sistem-d96tm/d96tm/transformacijski-parametri/>`__ (best accuracy)
@@ -30,7 +30,7 @@ parameters, but also allows a manual specification of transformation
 parameters for both available methods.
 
 **IMPORTANT NOTICE:** Library is primarily intended and therefore mostly
-suitable for slovenian coordinate systems d48GK (espg: 3912) and d96TM
+suitable for slovenian coordinate systems D48GK (espg: 3912) and D96TM
 (epsg: 3794)!
 
 For more theoretical background, see the official GURS
@@ -59,12 +59,17 @@ Installing pysitra on Windows is straightforward, but it takes a bit more steps:
 
 -  First, if you don't even have a Python installed,
    the easiest way to setup the proper Python environment and its dependencies is by installing `Anaconda <https://www.continuum.io/downloads>`__.
-   This is a Python distibution that ships with most of the popular libraries out of the box. Make sure to add
-   ``conda`` and ``python`` to ``path`` system environment variable.
+   This is a Python distibution that ships with most of the popular libraries out of the box.
 -  Despite Anaconda's awesomeness, libraries that require non-python GEOS and GDAL are best
-   separetely installed by downloading the .whl file that matches your python and system version from `this repo <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`__.
-   Download appropriate wheels for **GDAL, Fiona and Shapely** and install them with ``pip install *.whl``.
--  Compliling non-pure Python dependencies on Windows also requires `Visual C++ Build Tools package <http://landinghub.visualstudio.com/visual-cpp-build-tools>`__
+   separetely installed by downloading the .whl file that matches your Python and Windows (32 or 64 bit) version from `this repo <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`__.
+   Download appropriate wheels for `GDAL <http://www.lfd.uci.edu/~gohlke/pythonlibs/#gdal>`__,
+   `Fiona <http://www.lfd.uci.edu/~gohlke/pythonlibs/#fiona>`__ and
+   `Shapely <http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely>`__ and install them with ``pip install *.whl``.
+-  Compliling non-pure Python dependencies on Windows also requires C++ compilers, so in case of installation errors,
+   make sure you have `Visual C++ Build Tools package <http://landinghub.visualstudio.com/visual-cpp-build-tools>`__ installed.
+   If you are using Python2.7, double check also for `Visual C++ 2008 Service Pack 1 <https://www.microsoft.com/en-us/download/details.aspx?id=26368>`__ and
+   `Visual C++ Compiler for Python 2.7 <https://www.microsoft.com/en-us/download/details.aspx?id=44266>`__.
+
 -  Then you can install pysitra with pip as in the above, Linux example.
 
 
@@ -266,8 +271,9 @@ available options:
 TODO:
 -----
 
--  Implementation for 3D points (7-parametric transformation) -->
+-  Implementation for 3D points conversion (7-parametric transformation) -->
    1region,3regions,7regions transformation
+-  Implementation for projcs-->geocs transformation (GEOID model!)
 
 Authors
 -------
