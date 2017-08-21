@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name='pysitra',
-      version='0.3.3',
+      version='0.3.4',
       description='Python implementation of the most popular slovenian transformation methods (SiTra!)',
       long_description=readme(),
       url='https://github.com/marjanmo/pysitra',

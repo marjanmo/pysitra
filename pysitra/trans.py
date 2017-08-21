@@ -260,6 +260,7 @@ def shp_transformation(df_in,from_crs,method,params=None):
 
                 # poracunaj nove tocke
                 pts_out = ts.transform(points=pts)
+                pts_out = [(x.x,x.y) for x in pts_out] #convert back to the point tuples, dont leave Point object...
                 df_in.loc[i, "geometry"] = Polygon(pts_out)
             else:
                 raise NotImplementedError(

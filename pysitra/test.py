@@ -1,19 +1,12 @@
 from __future__ import print_function    # (at top of module)
 import click
-from . import utils,trans
+from pysitra import utils,trans
 import geopandas as gpd
 import os
 import pandas as pd
 import warnings
 
 
-
-@click.command()
-@click.option("--to_crs", required=True, type=click.Choice(["d48", "d96"]), help="Coordinate system to transform your data into")
-@click.option("--method", default="triangle",  type=click.Choice(["triangle", "24regions"]), help="Transformation method to be used")
-@click.option("--params", required=False,default=None, help="Optional argument: semicolon separated manual parameters, required for each transformation method (24regions:4params, triangle:6params,...")
-@click.argument("file_in", required=True)
-@click.argument("file_out", required=False)
 def cli(to_crs,method,params,file_in,file_out):
 
     if to_crs == 'd48':
@@ -58,7 +51,6 @@ def cli(to_crs,method,params,file_in,file_out):
         print(df_in)
 
         df_out = trans.shp_transformation(df_in=df_in, from_crs=from_crs,method=method,params=params)
-        df_out.crs = "+init=epsg:{}".format(to_epsg)
 
         print("\nOutput data sample:")
         print(df_out)
@@ -91,3 +83,5 @@ def cli(to_crs,method,params,file_in,file_out):
         raise IOError("Only shapefiles and csv files are supported input type!")
 
 
+
+cli(to_crs="d96",params=None,method="triangle",file_in="/media/marjan/Delo/Delo/MojGIS/razvodnice_detailed_d48.shp",file_out="/media/marjan/Delo/Delo/MojGIS/razvodnice_detailed_d96.shp")
